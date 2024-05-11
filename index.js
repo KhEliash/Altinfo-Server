@@ -31,7 +31,13 @@ async function run() {
 
     const queriesCollection = client.db('altInfo').collection('queries')
 
-    
+    // post data
+    app.post('/queries', async (req, res) => {
+      const newQuery = req.body;
+      console.log(newQuery);
+      const result = await queriesCollection.insertOne(newQuery);
+     console.log(result);
+    });
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
