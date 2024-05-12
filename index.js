@@ -13,8 +13,7 @@ app.use(
 );
 app.use(express.json());
 
-const uri =
-  `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xzzvi9v.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
+const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xzzvi9v.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
 // Create a MongoClient with a MongoClientOptions object to set the Stable API version
 const client = new MongoClient(uri, {
@@ -29,14 +28,42 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
 
-    const queriesCollection = client.db('altInfo').collection('queries')
+    const queriesCollection = client.db("altInfo").collection("queries");
+
+    app.get("/queries", async (req, res) => {
+      const cursor = queriesCollection.find();
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     // post data
-    app.post('/queries', async (req, res) => {
+    app.post("/queries", async (req, res) => {
       const newQuery = req.body;
       console.log(newQuery);
       const result = await queriesCollection.insertOne(newQuery);
-     console.log(result);
+      console.log(result);
+    });
+
+    // get data via email
+
+    app.get("/myQueries", async (req, res) => {
+      const userEmail = req.query.userEmail;
+      console.log(userEmail);
+
+      const result = await queriesCollection
+        .find({ "userInfo.userEmail": userEmail })
+        .toArray();
+       
+      res.send(result);
+    });
+
+      // get single product
+    app.get("/singleQueries/:id", async (req, res) => {
+      const result = await queriesCollection.findOne({
+        _id: new ObjectId(req.params.id),
+      });
+      console.log(result);
+      res.send(result);
     });
 
     // Send a ping to confirm a successful connection
