@@ -39,9 +39,10 @@ async function run() {
     // post data
     app.post("/queries", async (req, res) => {
       const newQuery = req.body;
-      console.log(newQuery);
+      // console.log(newQuery);
       const result = await queriesCollection.insertOne(newQuery);
       console.log(result);
+      res.send(result);
     });
 
     // get data via email
@@ -53,16 +54,39 @@ async function run() {
       const result = await queriesCollection
         .find({ "userInfo.userEmail": userEmail })
         .toArray();
-       
+
       res.send(result);
     });
 
-      // get single product
+    // get single product
     app.get("/singleQueries/:id", async (req, res) => {
       const result = await queriesCollection.findOne({
         _id: new ObjectId(req.params.id),
       });
       console.log(result);
+      res.send(result);
+    });
+
+    app.put("/updateQueries/:id", async (req, res) => {
+      const query = { _id: new ObjectId(req.params.id) };
+      const data = {
+        $set: {
+          productName: req.body.productName,
+          productBrand: req.body.productBrand,
+          productImageURL: req.body.productImageURL,
+          queryTitle: req.body.queryTitle,
+          boycottingReason: req.body.boycottingReason,
+        },
+      };
+      const result = await queriesCollection.updateOne(query, data);
+      res.send(result);
+    });
+
+    // delete
+    app.delete("/delete/:id", async (req, res) => {
+      const result = await queriesCollection.deleteOne({
+        _id: new ObjectId(req.params.id),
+      });
       res.send(result);
     });
 
