@@ -69,7 +69,7 @@ async function run() {
     // token api
     app.post("/jwt", async (req, res) => {
       const user = req.body;
-      console.log("user token", user);
+      // console.log("user token", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
         expiresIn: "1h",
       });
@@ -78,7 +78,7 @@ async function run() {
 
     app.post("/logout", async (req, res) => {
       const user = req.body;
-      console.log("object", user);
+      // console.log("object", user);
       res
         .clearCookie("token", { ...cookieOptions, maxAge: 0 })
         .send({ success: true });
@@ -96,7 +96,7 @@ async function run() {
       const newQuery = req.body;
       // console.log(newQuery);
       const result = await queriesCollection.insertOne(newQuery);
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
 
@@ -104,8 +104,8 @@ async function run() {
 
     app.get("/myQueries", verifyToken, async (req, res) => {
       const userEmail = req.query.userEmail;
-      console.log(userEmail);
-      console.log("ciiiillk", req.user.email);
+      // console.log(userEmail);
+      // console.log("ciiiillk", req.user.email);
       if (req.user.email !== userEmail) {
         return res.status(403).send({ message: "unauthorized access" });
       }
@@ -122,18 +122,32 @@ async function run() {
       const result = await queriesCollection.findOne({
         _id: new ObjectId(req.params.id),
       });
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
 
     // post recommendation data
     app.post("/recommendation", async (req, res) => {
       const newQuery = req.body;
-      console.log(newQuery);
+      // console.log(newQuery);
       const result = await recommendationCollection.insertOne(newQuery);
-      console.log(result);
+      // console.log(result);
       res.send(result);
     });
+
+    app.get('/recom', async(req,res)=>{
+       
+      const id = req.query.queryId;
+      console.log(id);
+      const result = await recommendationCollection.find({queryId:id}).toArray();
+      // console.log(result);
+      res.send(result);
+    })
+
+
+
+
+
 
     app.put("/updateQuerie/:id", async (req, res) => {
       const queryId = req.params.id;
