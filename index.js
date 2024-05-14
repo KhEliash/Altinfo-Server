@@ -62,6 +62,7 @@ async function run() {
     // await client.connect();
 
     const queriesCollection = client.db("altInfo").collection("queries");
+    const recommendationCollection = client.db("altInfo").collection("recommendation");
 
     // token api
     app.post("/jwt", async (req, res) => {
@@ -117,6 +118,15 @@ async function run() {
       const result = await queriesCollection.findOne({
         _id: new ObjectId(req.params.id),
       });
+      console.log(result);
+      res.send(result);
+    });
+
+     // post recommendation data
+     app.post("/recommendation", async (req, res) => {
+      const newQuery = req.body;
+      // console.log(newQuery);
+      const result = await recommendationCollection.insertOne(newQuery);
       console.log(result);
       res.send(result);
     });
