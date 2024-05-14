@@ -62,7 +62,9 @@ async function run() {
     // await client.connect();
 
     const queriesCollection = client.db("altInfo").collection("queries");
-    const recommendationCollection = client.db("altInfo").collection("recommendation");
+    const recommendationCollection = client
+      .db("altInfo")
+      .collection("recommendation");
 
     // token api
     app.post("/jwt", async (req, res) => {
@@ -77,7 +79,9 @@ async function run() {
     app.post("/logout", async (req, res) => {
       const user = req.body;
       console.log("object", user);
-      res.clearCookie("token", {...cookieOptions ,maxAge: 0 }).send({ success: true });
+      res
+        .clearCookie("token", { ...cookieOptions, maxAge: 0 })
+        .send({ success: true });
     });
 
     // get all data
@@ -114,7 +118,7 @@ async function run() {
     });
 
     // get single product
-    app.get("/singleQueries/:id",verifyToken, async (req, res) => {
+    app.get("/singleQueries/:id", async (req, res) => {
       const result = await queriesCollection.findOne({
         _id: new ObjectId(req.params.id),
       });
@@ -122,12 +126,22 @@ async function run() {
       res.send(result);
     });
 
-     // post recommendation data
-     app.post("/recommendation", async (req, res) => {
+    // post recommendation data
+    app.post("/recommendation", async (req, res) => {
       const newQuery = req.body;
-      // console.log(newQuery);
+      console.log(newQuery);
       const result = await recommendationCollection.insertOne(newQuery);
       console.log(result);
+      res.send(result);
+    });
+
+    app.put("/updateQuerie/:id", async (req, res) => {
+      const queryId = req.params.id;
+      const objectId = new ObjectId(queryId);
+      const query = { _id: objectId };
+      const update = { $inc: { "userInfo.recommendationCount": 1 } };
+      const result = await queriesCollection.updateOne(query, update);
+
       res.send(result);
     });
 
