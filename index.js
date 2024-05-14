@@ -1,5 +1,7 @@
 const express = require("express");
 const cors = require("cors");
+const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 require("dotenv").config();
 const { MongoClient, ServerApiVersion, ObjectId } = require("mongodb");
 const app = express();
@@ -8,10 +10,17 @@ const port = process.env.PORT || 5000;
 // Middleware
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://altinfohub.web.app"],
+    origin: [
+      "http://localhost:5173",
+      "https://altinfohub.web.app",
+      "https://altinfohub.firebaseapp.com",
+    ],
+    credentials: true,
   })
 );
 app.use(express.json());
+
+app.use(cookieParser());
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.xzzvi9v.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
 
@@ -23,6 +32,30 @@ const client = new MongoClient(uri, {
     deprecationErrors: true,
   },
 });
+
+const verifyToken = (req, res, next) => {
+  const token = req.cookies?.token;
+  // console.log('middle',token);
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized access" });
+  }
+  jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized access" });
+    }
+    req.user = decoded;
+    next();
+  });
+};
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+};
+//localhost:5000 and localhost:5173 are treated as same site.  so sameSite value must be strict in development server.  in production sameSite will be none
+// in development server secure will false .  in production secure will be true
+
 async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
@@ -30,6 +63,23 @@ async function run() {
 
     const queriesCollection = client.db("altInfo").collection("queries");
 
+    // token api
+    app.post("/jwt", async (req, res) => {
+      const user = req.body;
+      console.log("user token", user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {
+        expiresIn: "1h",
+      });
+      res.cookie("token", token, cookieOptions).send({ success: true });
+    });
+
+    app.post("/logout", async (req, res) => {
+      const user = req.body;
+      console.log("object", user);
+      res.clearCookie("token", {...cookieOptions ,maxAge: 0 }).send({ success: true });
+    });
+
+    // get all data
     app.get("/queries", async (req, res) => {
       const cursor = queriesCollection.find();
       const result = await cursor.toArray();
@@ -47,9 +97,13 @@ async function run() {
 
     // get data via email
 
-    app.get("/myQueries", async (req, res) => {
+    app.get("/myQueries", verifyToken, async (req, res) => {
       const userEmail = req.query.userEmail;
       console.log(userEmail);
+      console.log("ciiiillk", req.user.email);
+      if (req.user.email !== userEmail) {
+        return res.status(403).send({ message: "unauthorized access" });
+      }
 
       const result = await queriesCollection
         .find({ "userInfo.userEmail": userEmail })
@@ -59,7 +113,7 @@ async function run() {
     });
 
     // get single product
-    app.get("/singleQueries/:id", async (req, res) => {
+    app.get("/singleQueries/:id",verifyToken, async (req, res) => {
       const result = await queriesCollection.findOne({
         _id: new ObjectId(req.params.id),
       });
@@ -91,7 +145,7 @@ async function run() {
     });
 
     // Send a ping to confirm a successful connection
-    await client.db("admin").command({ ping: 1 });
+    // await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
     );
