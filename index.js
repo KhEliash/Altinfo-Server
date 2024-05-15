@@ -147,13 +147,23 @@ async function run() {
 
     // get my recom
     app.get("/myrecom", async (req, res) => {
-      const id = req.query.email;
+      const email = req.query.email;
       const result = await recommendationCollection
-        .find({ RecommenderEmail: id })
+        .find({ RecommenderEmail: email })
         .toArray();
       // console.log(result);
       res.send(result);
     });
+    // recom for me
+    app.get("/recomforMe", async (req, res) => {
+      const email = req.query.email;
+      const result = await recommendationCollection
+        .find({ userEmail: email })
+        .toArray();
+      // console.log(result);
+      res.send(result);
+    });
+
     // recom delete
     app.delete("/delete/:id", async (req, res) => {
       const result = await recommendationCollection.deleteOne({
