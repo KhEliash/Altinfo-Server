@@ -135,18 +135,25 @@ async function run() {
       res.send(result);
     });
 
-    app.get('/recom', async(req,res)=>{
-       
+    app.get("/recom", async (req, res) => {
       const id = req.query.queryId;
-      console.log(id);
-      const result = await recommendationCollection.find({queryId:id}).toArray();
+      // console.log(id);
+      const result = await recommendationCollection
+        .find({ queryId: id })
+        .toArray();
+      // console.log(result);
+      res.send(result);
+    });
+
+    // get my recom
+    app.get("/myrecom", async (req, res) => {
+       
+      const id = req.query.email;
+      const result =await recommendationCollection.find({RecommenderEmail: id}).toArray();
       // console.log(result);
       res.send(result);
     })
-
-
-
-
+      
 
 
     app.put("/updateQuerie/:id", async (req, res) => {
