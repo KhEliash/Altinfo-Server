@@ -147,26 +147,40 @@ async function run() {
 
     // get my recom
     app.get("/myrecom", async (req, res) => {
-       
       const id = req.query.email;
-      const result =await recommendationCollection.find({RecommenderEmail: id}).toArray();
+      const result = await recommendationCollection
+        .find({ RecommenderEmail: id })
+        .toArray();
       // console.log(result);
       res.send(result);
-    })
-      // recom delete 
-      app.delete("/delete/:id", async (req, res) => {
-        const result = await recommendationCollection.deleteOne({
-          _id: new ObjectId(req.params.id),
-        });
-        res.send(result);
+    });
+    // recom delete
+    app.delete("/delete/:id", async (req, res) => {
+      const result = await recommendationCollection.deleteOne({
+        _id: new ObjectId(req.params.id),
       });
+      res.send(result);
+    });
 
-
+    // update incre
     app.put("/updateQuerie/:id", async (req, res) => {
       const queryId = req.params.id;
       const objectId = new ObjectId(queryId);
       const query = { _id: objectId };
       const update = { $inc: { "userInfo.recommendationCount": 1 } };
+      const result = await queriesCollection.updateOne(query, update);
+
+      res.send(result);
+    });
+    // update decre
+    app.put("/updateInc/:id", async (req, res) => {
+      const queryId = req.params.id;
+
+      const objectId = new ObjectId(queryId);
+      const query = { _id: objectId };
+
+      const update = { $inc: { "userInfo.recommendationCount": -1 } };
+
       const result = await queriesCollection.updateOne(query, update);
 
       res.send(result);
