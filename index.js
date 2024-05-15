@@ -153,7 +153,13 @@ async function run() {
       // console.log(result);
       res.send(result);
     })
-      
+      // recom delete 
+      app.delete("/delete/:id", async (req, res) => {
+        const result = await recommendationCollection.deleteOne({
+          _id: new ObjectId(req.params.id),
+        });
+        res.send(result);
+      });
 
 
     app.put("/updateQuerie/:id", async (req, res) => {
