@@ -212,10 +212,12 @@ async function run() {
     });
 
     // delete
-    app.delete("/delete/:id", async (req, res) => {
+    app.delete("/deleteq/:id", async (req, res) => {
+      // console.log(req.params.id);
       const result = await queriesCollection.deleteOne({
-        _id: new ObjectId(req.params.id),
+        _id: new ObjectId(req.params.id)
       });
+      // console.log(result);
       res.send(result);
     });
 
