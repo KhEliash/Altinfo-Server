@@ -76,6 +76,8 @@ async function run() {
       res.cookie("token", token, cookieOptions).send({ success: true });
     });
 
+    // get search data
+
     app.post("/logout", async (req, res) => {
       const user = req.body;
       // console.log("object", user);
@@ -215,7 +217,7 @@ async function run() {
     app.delete("/deleteq/:id", async (req, res) => {
       // console.log(req.params.id);
       const result = await queriesCollection.deleteOne({
-        _id: new ObjectId(req.params.id)
+        _id: new ObjectId(req.params.id),
       });
       // console.log(result);
       res.send(result);
