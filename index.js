@@ -76,8 +76,6 @@ async function run() {
       res.cookie("token", token, cookieOptions).send({ success: true });
     });
 
-    // get search data
-
     app.post("/logout", async (req, res) => {
       const user = req.body;
       // console.log("object", user);
@@ -91,6 +89,21 @@ async function run() {
       const cursor = queriesCollection.find();
       const result = await cursor.toArray();
       res.send(result);
+    });
+
+    // get search data
+    app.get("/products/search", async (req, res) => {
+      const query = req.query.q;
+      const products = await queriesCollection
+        .find({
+          productName: {
+            $regex: query,
+            $options: "i", // Case-insensitive search
+          },
+        })
+        .toArray();
+      // console.log(products);
+      res.send(products);
     });
 
     // post data
